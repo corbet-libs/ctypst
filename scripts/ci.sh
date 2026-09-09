@@ -5,6 +5,18 @@ set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 ci_root=$PWD
+case ${CI_LINKER:-system} in
+  system) ;;
+  mold)
+    mold --version
+    # Intercept linker execution without invalidating every Cargo fingerprint.
+    CI_LINKER=system exec mold --run bash "$ci_root/scripts/ci.sh" "$@"
+    ;;
+  *)
+    printf 'CI_LINKER must be system or mold.\n' >&2
+    exit 2
+    ;;
+esac
 ci_toolchain=${CI_RUST_TOOLCHAIN:-1.92.0}
 ci_cargo=(cargo)
 ci_rustc=(rustc)

@@ -10,6 +10,9 @@ variables:
   CHECK_TARGET:
     description: Run all, quality, test, python, javascript, or license checks
     default: all
+  CI_LINKER:
+    description: Select the installed system linker or opt in to mold
+    default: system
 when:
   - event: manual
 skip_clone: true

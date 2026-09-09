@@ -84,6 +84,8 @@ compiler budget and persistent caches. Native macOS/Windows tests and the pinned
 remain separate GitHub Actions gates; a Crow Linux success does not prove them.
 Set Crow's optional `CHECK_TARGET` variable to an individual target for a
 focused rerun; it defaults to `all` and rejects unknown targets.
+`CI_LINKER=mold` opts into an already installed mold linker for a measured run;
+the default `system` keeps the toolchain's linker selection.
 The `.ci/ccid.toml` adapter exposes the same targets to the shared CI driver.
 Integration contracts share one test executable to avoid repeatedly linking
 the embedded compiler; their individual tests and the library unit tests remain
