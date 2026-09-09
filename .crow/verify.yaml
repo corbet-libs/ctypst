@@ -7,6 +7,9 @@ variables:
   SOURCE_SHA256:
     description: SHA256 of the exact staged archive
     default: ''
+  CHECK_TARGET:
+    description: Run all, quality, test, python, javascript, or license checks
+    default: all
 when:
   - event: manual
 skip_clone: true
@@ -34,4 +37,4 @@ steps:
       BUN_INSTALL_CACHE_DIR: /workspaces/ci-caches/ctypst/bun
     commands:
       - mkdir -p /workspaces/ci-caches/ctypst
-      - timeout --kill-after=30s 55m flock --timeout 60 /workspaces/ci-caches/ctypst/verify.lock bash scripts/ci.sh all
+      - timeout --kill-after=30s 55m flock --timeout 60 /workspaces/ci-caches/ctypst/verify.lock bash scripts/ci.sh "$CHECK_TARGET"
