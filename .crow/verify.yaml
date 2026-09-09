@@ -26,12 +26,12 @@ steps:
     environment:
       CI_RUST_TOOLCHAIN: system
       CARGO_BUILD_JOBS: "2"
-      CARGO_TARGET_DIR: /caches/ctypst/target
+      CARGO_TARGET_DIR: /workspaces/ci-caches/ctypst/target
       CARGO_PROFILE_DEV_DEBUG: "0"
       CARGO_PROFILE_TEST_DEBUG: "0"
       CARGO_INCREMENTAL: "0"
-      UV_CACHE_DIR: /caches/ctypst/uv
-      BUN_INSTALL_CACHE_DIR: /caches/ctypst/bun
+      UV_CACHE_DIR: /workspaces/ci-caches/ctypst/uv
+      BUN_INSTALL_CACHE_DIR: /workspaces/ci-caches/ctypst/bun
     commands:
-      - mkdir -p /caches/ctypst
-      - timeout --kill-after=30s 55m flock --timeout 60 /caches/ctypst/verify.lock bash scripts/ci.sh all
+      - mkdir -p /workspaces/ci-caches/ctypst
+      - timeout --kill-after=30s 55m flock --timeout 60 /workspaces/ci-caches/ctypst/verify.lock bash scripts/ci.sh all
