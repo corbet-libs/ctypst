@@ -79,8 +79,8 @@ generated assets do not enter the Rust package. Rust quality checks reject
 package manifests containing dependency or virtual environment directories.
 
 The manual Crow `verify` workflow verifies a staged source archive against its
-commit and checksum, then runs the Linux checks with one compiler job and
-persistent caches. Native macOS/Windows tests and the pinned Rust toolchain
+commit and checksum, then runs the Linux checks with the worker's configured
+compiler budget and persistent caches. Native macOS/Windows tests and the pinned Rust toolchain
 remain separate GitHub Actions gates; a Crow Linux success does not prove them.
 Set Crow's optional `CHECK_TARGET` variable to an individual target for a
 focused rerun; it defaults to `all` and rejects unknown targets.

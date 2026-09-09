@@ -28,7 +28,6 @@ steps:
     depends_on: [verified-source]
     environment:
       CI_RUST_TOOLCHAIN: system
-      CARGO_BUILD_JOBS: "1"
       CARGO_TARGET_DIR: /workspaces/ci-caches/ctypst/target
       CARGO_PROFILE_DEV_DEBUG: "0"
       CARGO_PROFILE_TEST_DEBUG: "0"
