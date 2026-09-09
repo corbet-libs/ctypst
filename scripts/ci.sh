@@ -75,7 +75,7 @@ PY
 )
 
 license_checks() {
-  uvx --from reuse==6.0.0 reuse lint
+  uvx --from 'reuse[charset-normalizer]==6.0.0' reuse lint
 }
 
 case ${1:-all} in
