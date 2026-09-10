@@ -25,21 +25,39 @@ variables:
   CI_LINKER: {default: system}
   TMPDIR: {default: ""}
   RELEASE_TAG: {default: ""}
-  RELEASE_COMPONENT: {default: all}
-  RELEASE_STAGE: {default: all}
+  RELEASE_COMPONENT: {default: all, options: [all, cargo, javascript]}
+  RELEASE_STAGE: {default: all, options: [all, prepare, publish]}
   RELEASE_ARTIFACT_DIR: {default: ""}
   RELEASE_REUSE_CRATE: {default: ""}
   RELEASE_REUSE_SOURCE_ARCHIVE: {default: ""}
   RELEASE_REUSE_RECEIPT: {default: ""}
   RELEASE_REUSE_RECEIPT_SHA256: {default: ""}
 steps:
-  - name: prepare-packages-without-credentials
+  # Crow resolves secrets before commands; selection must happen in step when gates.
+  # Keep sequential execution so stage=all prepares before its selected publisher.
+  - name: validate-release-selection
     image: bash
     environment: &ccid-environment
       CCID_REVISION: '85e316579ea938c42a4e45d42cb3ac94aa2d9328'
       CARGO_PROFILE_DEV_DEBUG: "0"
       CARGO_PROFILE_TEST_DEBUG: "0"
       CARGO_INCREMENTAL: "0"
+    commands:
+      - |
+        set -eu
+        case "$RELEASE_STAGE" in
+          all|prepare|publish) ;;
+          *) printf '%s\n' 'RELEASE_STAGE must be all, prepare, or publish' >&2; exit 2 ;;
+        esac
+        case "$RELEASE_COMPONENT" in
+          all|cargo|javascript) ;;
+          *) printf '%s\n' 'RELEASE_COMPONENT must be all, cargo, or javascript' >&2; exit 2 ;;
+        esac
+  - name: prepare-packages-without-credentials
+    image: bash
+    when:
+      - evaluate: 'RELEASE_STAGE in ["all", "prepare"] && RELEASE_COMPONENT in ["all", "cargo", "javascript"]'
+    environment: *ccid-environment
     commands:
       - |
         set -eu
@@ -52,20 +70,16 @@ steps:
         TMPDIR="$${TMPDIR:-/tmp}"
         export TMPDIR
         exec "$CI_TOOL_BINARY" check --archive "$SOURCE_ARCHIVE" --sha256 "$SOURCE_SHA256" --commit "$CI_COMMIT_SHA" --check release-prepare
-  - name: publish-prepared-packages
+  - name: publish-prepared-cargo
     image: bash
+    when:
+      - evaluate: 'RELEASE_STAGE in ["all", "publish"] && RELEASE_COMPONENT == "cargo"'
     environment:
       <<: *ccid-environment
+      GH_TOKEN: {from_secret: ctypst_github_token}
       RELEASE_CARGO_AUTH: token
-      CARGO_REGISTRY_TOKEN:
-        from_secret: ctypst_cargo_token
-      NPM_TOKEN:
-        from_secret: ctypst_npm_token
-      JSR_TOKEN:
-        from_secret: ctypst_jsr_token
-      GH_TOKEN:
-        from_secret: ctypst_github_token
-    commands:
+      CARGO_REGISTRY_TOKEN: {from_secret: ctypst_cargo_token}
+    commands: &publish-commands
       - |
         set -eu
         printf '%s  %s\n' "$CI_TOOL_SHA256" "$CI_TOOL_ARCHIVE" | sha256sum --check --strict
@@ -77,3 +91,25 @@ steps:
         TMPDIR="$${TMPDIR:-/tmp}"
         export TMPDIR
         exec "$CI_TOOL_BINARY" check --archive "$SOURCE_ARCHIVE" --sha256 "$SOURCE_SHA256" --commit "$CI_COMMIT_SHA" --check release-publish
+  - name: publish-prepared-javascript
+    image: bash
+    when:
+      - evaluate: 'RELEASE_STAGE in ["all", "publish"] && RELEASE_COMPONENT == "javascript"'
+    environment:
+      <<: *ccid-environment
+      GH_TOKEN: {from_secret: ctypst_github_token}
+      NPM_TOKEN: {from_secret: ctypst_npm_token}
+      JSR_TOKEN: {from_secret: ctypst_jsr_token}
+    commands: *publish-commands
+  - name: publish-prepared-all
+    image: bash
+    when:
+      - evaluate: 'RELEASE_STAGE in ["all", "publish"] && RELEASE_COMPONENT == "all"'
+    environment:
+      <<: *ccid-environment
+      RELEASE_CARGO_AUTH: token
+      CARGO_REGISTRY_TOKEN: {from_secret: ctypst_cargo_token}
+      NPM_TOKEN: {from_secret: ctypst_npm_token}
+      JSR_TOKEN: {from_secret: ctypst_jsr_token}
+      GH_TOKEN: {from_secret: ctypst_github_token}
+    commands: *publish-commands

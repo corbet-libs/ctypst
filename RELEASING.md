@@ -54,8 +54,14 @@ Configure these repository secrets for **manual events only**, scoped to ctypst:
 | `ctypst_jsr_token` | `JSR_TOKEN` |
 | `ctypst_github_token` | `GH_TOKEN` |
 
-Secrets appear only in the publication step. Preparation refuses publication
-tokens. npm receives only its own token and publishes the prepared archive with
+Crow selects steps before resolving secrets. `RELEASE_STAGE=prepare` needs no
+publication credentials. Cargo publication requires GitHub and Cargo tokens;
+JavaScript requires GitHub, npm and JSR tokens; `all` requires all four. Invalid
+selectors fail in an unconditional validation step. This lets preparation and
+individual components run when unrelated registry credentials are absent.
+
+Secrets appear only in the selected publication step. Preparation refuses
+publication tokens. npm receives only its own token and publishes the prepared archive with
 lifecycle scripts disabled. Crow does not claim hosted OIDC provenance. The
 GHA route uses configured short-lived trusted authentication. Long-lived
 registry tokens remain on Crow; neither route configures trusted publishers
