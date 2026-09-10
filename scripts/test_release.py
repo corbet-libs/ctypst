@@ -490,7 +490,8 @@ class CrowReleaseSelection(unittest.TestCase):
             with self.subTest(stage=stage, component=component):
                 self.assertEqual(self.selected_steps(stage, component), ["validate-release-selection"])
                 result = subprocess.run(["bash", "-c", script], capture_output=True, text=True,
-                                        env={"PATH": os.defpath, "RELEASE_STAGE": stage, "RELEASE_COMPONENT": component})
+                                        env={"PATH": os.environ.get("PATH", os.defpath),
+                                             "RELEASE_STAGE": stage, "RELEASE_COMPONENT": component})
                 self.assertEqual(result.returncode, 2)
                 self.assertIn("must be", result.stderr)
 
