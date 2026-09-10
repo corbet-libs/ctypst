@@ -61,6 +61,7 @@ python_checks() (
   trap 'rm -rf -- "$ci_venv"' EXIT
   uv venv --python "$ci_python" "$ci_venv"
   uv pip install --python "$ci_venv/bin/python" 'maturin==1.15.0' 'pytest==9.1.1'
+  # shellcheck source=/dev/null # The virtual environment creates this file.
   source "$ci_venv/bin/activate"
   python --version
   maturin develop --locked
@@ -74,11 +75,11 @@ javascript_checks() (
   tar --exclude=.git --exclude=target --exclude=node_modules --exclude=.venv \
     --exclude=dist --exclude='*.tgz' --exclude="${ci_js_workspace##*/}" \
     -cf - . | tar -C "$ci_js_workspace" -xf -
-  ci_root=$ci_js_workspace
-  cd "$ci_root/js/@corbet-labs/ctypst"
+  ci_js_root=$ci_js_workspace
+  cd "$ci_js_root/js/@corbet-labs/ctypst"
   bun --version
   bun install --frozen-lockfile
-  python3 - "$ci_root" <<'PY'
+  python3 - "$ci_js_root" <<'PY'
 import json
 from pathlib import Path
 import sys
