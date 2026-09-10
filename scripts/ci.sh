@@ -105,7 +105,10 @@ PY
 )
 
 license_checks() {
-  uvx --from 'reuse[charset-normalizer]==6.0.0' reuse lint
+  # shellcheck source=scripts/existing-tool-path.sh
+  source "$ci_root/scripts/existing-tool-path.sh"
+  ctypst_use_existing_lint_tools reuse
+  reuse lint
 }
 
 case ${1:-all} in
@@ -117,6 +120,7 @@ case ${1:-all} in
     python3 scripts/release.py source
     actionlint -shellcheck shellcheck .github/workflows/*.yml
     shellcheck scripts/*.sh
+    reuse lint
     ;;
   quality) rust_quality ;;
   test) rust_tests ;;

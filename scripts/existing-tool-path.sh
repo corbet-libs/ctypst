@@ -6,7 +6,8 @@
 ctypst_use_existing_lint_tools() {
   local tool candidate resolved
   local -a candidates
-  for tool in actionlint shellcheck; do
+  if (($# == 0)); then set -- actionlint shellcheck reuse; fi
+  for tool in "$@"; do
     if resolved=$(command -v "$tool"); then
       printf 'Existing lint tool: %s\n' "$resolved"
       continue
@@ -14,6 +15,8 @@ ctypst_use_existing_lint_tools() {
     case "$tool" in
       actionlint) candidates=(/nix/store/*-actionlint-*/bin/actionlint) ;;
       shellcheck) candidates=(/nix/store/*-shellcheck-*/bin/shellcheck) ;;
+      reuse) candidates=(/nix/store/*-reuse-*/bin/reuse) ;;
+      *) printf 'Unknown lint tool: %s.\n' "$tool" >&2; return 2 ;;
     esac
     resolved=
     for candidate in "${candidates[@]}"; do
