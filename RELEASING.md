@@ -57,8 +57,9 @@ Configure these repository secrets for **manual events only**, scoped to ctypst:
 Secrets appear only in the publication step. Preparation refuses publication
 tokens. npm receives only its own token and publishes the prepared archive with
 lifecycle scripts disabled. Crow does not claim hosted OIDC provenance. The
-GHA route retains configured trusted authentication; bootstrap-token use does
-not incidentally configure trusted publishers or make them exclusive.
+GHA route uses configured short-lived trusted authentication. Long-lived
+registry tokens remain on Crow; neither route configures trusted publishers
+or makes them exclusive.
 
 Cargo token publication requires the registry's `trustpub_only` setting to be
 false. If it is true, the command fails before upload and explains the missing
